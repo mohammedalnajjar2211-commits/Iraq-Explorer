@@ -17,25 +17,21 @@ function drawGovs(){clear();GOVS.forEach(g=>{let m=L.marker([g[4],g[5]],{icon:ic
 async function showGov(g){map.flyTo([g[4],g[5]],8);let w='';try{let r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g[4]}&longitude=${g[5]}&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=auto`);let d=await r.json();w=`<div class="popup-weather"><b>${Math.round(d.current.temperature_2m)}°C</b><span>${d.current.relative_humidity_2m}%</span><span>${Math.round(d.current.wind_speed_10m)} km/h</span></div>`}catch(e){}let tags=(Array.isArray(g[9])?g[9]:(g[10]||[])).map(x=>`<span>${x}</span>`).join('');info(`<small>${T[currentLang].filters[0]}</small><h2>${govName(g)}</h2><p>${govDesc(g)}</p>${w}<div class="info-tags">${tags}</div>`)}
 function showType(type){clear();if(type==='gov')return drawGovs();POIS.filter(p=>p.type===type).forEach(p=>{let m=L.marker([p.lat,p.lng],{icon:icon(p.icon,type)}).addTo(map).bindTooltip(p.name,{direction:'top'});m.on('click',()=>{map.flyTo([p.lat,p.lng],10);info(`<small>${type==='airport'?'مطار':type==='holy'?'مكان مقدس':'موقع سياحي وأثري'}</small><h2>${p.name}</h2><p>${p.desc}</p><a class="map-link" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${p.lat},${p.lng}">فتح الموقع على Google Maps ↗</a>`)});markers.push(m)})}
 function renderHero(){
- const el=$('#heroIraqMap'); el.innerHTML='';
- if(window.heroMap){window.heroMap.remove();window.heroMap=null}
- const hm=L.map(el,{zoomControl:false,attributionControl:false,scrollWheelZoom:false,doubleClickZoom:false,dragging:false,touchZoom:false,boxZoom:false,keyboard:false,zoomSnap:.25}); window.heroMap=hm;
- hm.setView([33.15,44.15],5.45);
- L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:8,opacity:.16}).addTo(hm);
- const gold=L.layerGroup().addTo(hm);
+ const el=$('#heroIraqMap');
+ if(window.heroMap){try{window.heroMap.remove()}catch(e){} window.heroMap=null}
+ const POS={
+  duhok:[46,7],nineveh:[38,18],erbil:[54,15],sulaymaniyah:[66,23],halabja:[73,27],kirkuk:[54,25],saladin:[47,34],diyala:[62,41],anbar:[27,49],baghdad:[58,47],babylon:[57,55],karbala:[50,57],wasit:[68,54],qadisiyah:[63,63],najaf:[50,70],maysan:[81,62],dhiqar:[74,69],muthanna:[62,78],basra:[84,79]
+ };
+ const mapUrl='https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Iraqi_Governorates_ar.svg/960px-Iraqi_Governorates_ar.svg.png';
+ el.innerHTML=`<div class="hero-map-frame"><img class="iraq-admin-image" src="${mapUrl}" alt="خريطة محافظات العراق" referrerpolicy="no-referrer"><div class="hero-hotspots" aria-label="محافظات العراق"></div><div class="gov-hover-card" id="govHoverCard"></div></div>`;
+ const layer=el.querySelector('.hero-hotspots'), card=el.querySelector('#govHoverCard');
  GOVS.forEach(g=>{
-   const name=govName(g);
-   const icon=L.divIcon({className:'hero-gov-label',html:`<button type="button" aria-label="${name}"><span>${name}</span></button>`,iconSize:[90,34],iconAnchor:[45,17]});
-   const m=L.marker([g[4],g[5]],{icon,keyboard:true}).addTo(gold);
-   m.bindTooltip(`<b>${name}</b><br><small>${g[8]}</small>`,{direction:'top',className:'gov-tip',offset:[0,-12]});
-   m.on('click',()=>{location.hash='map';setTimeout(()=>showGov(g),250)});
+   const pos=POS[g[0]]; if(!pos)return;
+   const b=document.createElement('button'); b.type='button'; b.className='gov-hotspot'; b.style.left=pos[0]+'%'; b.style.top=pos[1]+'%'; b.setAttribute('aria-label',govName(g)); b.dataset.id=g[0];
+   const show=()=>{card.innerHTML=`<b>${govName(g)}</b><small>${g[8]}</small><p>${govDesc(g)}</p>`;card.style.display='block';let x=pos[0],y=pos[1];card.style.left=(x>62?x-30:x+3)+'%';card.style.top=(y>72?y-20:y+3)+'%'};
+   b.addEventListener('mouseenter',show); b.addEventListener('focus',show); b.addEventListener('mouseleave',()=>card.style.display='none'); b.addEventListener('blur',()=>card.style.display='none');
+   b.addEventListener('click',()=>{location.hash='map';setTimeout(()=>showGov(g),250)}); layer.appendChild(b);
  });
- // Try real ADM1 polygons. Labels remain geographically anchored even if the CDN is unavailable.
- fetch('https://cdn.jsdelivr.net/gh/wmgeolab/geoBoundaries@9469f09/releaseData/gbOpen/IRQ/ADM1/geoBoundaries-IRQ-ADM1_simplified.geojson')
-  .then(r=>{if(!r.ok)throw new Error();return r.json()}).then(data=>{
-    const layer=L.geoJSON(data,{style:{color:'#ffd75c',weight:1.25,fillColor:'#c89418',fillOpacity:.20},onEachFeature:(f,l)=>{const n=f.properties.shapeName||f.properties.NAME_1||'';l.bindTooltip(n,{sticky:true,className:'gov-tip'});l.on({mouseover:e=>e.target.setStyle({weight:2.5,fillOpacity:.42,fillColor:'#ffd45a'}),mouseout:e=>e.target.setStyle({weight:1.25,fillOpacity:.20,fillColor:'#c89418'})})}}).addTo(hm);layer.bringToBack();hm.fitBounds(layer.getBounds(),{padding:[10,10]});
-  }).catch(()=>{});
- setTimeout(()=>hm.invalidateSize(),100);
 }
 function renderPeople(tab='scholars'){const grid=$('#peopleGrid');const more={ar:'اقرأ النبذة',ku:'زانیاری',en:'Biography',sv:'Biografi',de:'Biografie',fr:'Biographie',tr:'Biyografi'}[currentLang]||'Biography';grid.innerHTML=PEOPLE[tab].map((p,i)=>`<article class="person-card"><div class="person-photo">${p[2]?`<img src="${p[2]}" alt="${p[0]}" loading="lazy" onerror="this.parentElement.classList.add('fallback');this.remove()">`:''}<span>${String(i+1).padStart(2,'0')}</span></div><h3>${p[0]}</h3><p>${p[1]}</p><small>${more}</small></article>`).join('')}
 function renderTourism(){const box=$('#tourismCards');const view={ar:'عرض على الخريطة ←',ku:'لە نەخشە پیشان بدە ←',en:'View on map →',sv:'Visa på kartan →',de:'Auf Karte zeigen →',fr:'Voir sur la carte →',tr:'Haritada göster →'}[currentLang]||'View on map →';const list=POIS.filter(p=>p.type==='tourism');box.innerHTML=list.map((p,i)=>`<button class="tour-card" data-i="${i}"><div class="tour-photo">${p.img?`<img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.parentElement.classList.add('fallback');this.remove()">`:p.icon}</div><div><h3>${p.name}</h3><p>${p.desc}</p><span>${view}</span></div></button>`).join('');box.querySelectorAll('.tour-card').forEach((b,i)=>b.onclick=()=>{let p=list[i];location.hash='map';setTimeout(()=>{showType('tourism');map.flyTo([p.lat,p.lng],10)},250)})}

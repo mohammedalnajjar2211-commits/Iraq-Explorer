@@ -33,3 +33,12 @@ html[dir="ltr"] .hero-copy,html[dir="ltr"] .section-title,html[dir="ltr"] .impor
 .hero-gov-label button:hover{background:#f1c94d;color:#111;transform:scale(1.08);box-shadow:0 0 14px #ffe46d,0 0 28px #d9a51d}
 @media(max-width:900px){.hero-iraq-map{height:500px!important}.hero-gov-label button{font-size:9px;padding:4px 6px}}
 @media(max-width:520px){.hero-iraq-map{height:470px!important}.hero-gov-label button{font-size:8px;padding:3px 5px}.hero-gov-label{margin-left:-38px!important;width:76px!important}}
+/* V10 final hero map: one intrinsic map frame; hotspots share the exact same coordinate box */
+.hero-iraq-map{height:auto!important;min-height:0!important;width:min(540px,100%)!important;overflow:visible!important;border-radius:0!important;background:transparent!important;filter:none!important}
+.hero-map-frame{position:relative;width:100%;aspect-ratio:960/978;margin:auto;isolation:isolate}
+.iraq-admin-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;filter:sepia(.72) saturate(1.55) brightness(.92) contrast(1.06) drop-shadow(0 0 8px rgba(255,209,73,.7)) drop-shadow(0 0 28px rgba(209,151,22,.34));user-select:none;-webkit-user-drag:none}
+.hero-map-frame .hero-hotspots{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;aspect-ratio:auto!important;max-height:none!important;transform:none!important;margin:0!important;top:0!important;pointer-events:none}
+.hero-map-frame .gov-hotspot{width:14px;height:14px;padding:0;transform:translate(-50%,-50%);border:2px solid #fff1a6;background:#d6a31f;box-shadow:0 0 0 4px rgba(246,197,66,.12),0 0 15px #ffd85d;z-index:8}
+.hero-map-frame .gov-hotspot:hover,.hero-map-frame .gov-hotspot:focus{transform:translate(-50%,-50%) scale(1.45);outline:none;background:#fff2a1}
+.hero-map-frame .gov-hover-card{z-index:20;max-width:220px}
+@media(max-width:600px){.hero-iraq-map{width:min(100%,430px)!important}.hero-map-frame .gov-hotspot{width:11px;height:11px;border-width:1.5px}.hero-map-frame .gov-hover-card{min-width:150px;max-width:180px;padding:9px}.hero-map-frame .gov-hover-card b{font-size:14px}.hero-map-frame .gov-hover-card p{font-size:10px}}
