@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mohammedalnajjar2211-commits.github.io/Iraq-Explorer/sitemap.xml
